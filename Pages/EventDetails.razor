@@ -1,0 +1,84 @@
+@page "/events/{id:int}"
+@using EventEase.Models
+@using EventEaseApp2.Services
+@inject NavigationManager NavManager
+@inject EventService EventService
+@inject UserSessionService Session
+
+
+<h2>Event Details</h2>
+
+@if (Event != null)
+{
+    <p><strong>Name:</strong> @Event.Name</p>
+    <p><strong>Date:</strong> @Event.Date.ToString("MMMM dd, yyyy")</p>
+    <p><strong>Location:</strong> @Event.Location</p>
+
+    //<NavLink class="btn btn-secondary mt-2" href="@($"/eventdetails/{Event.Id}")">
+    //View Details
+    //</NavLink>
+
+    <button class="btn btn-primary ms-2" @onclick="QuickAttend">
+        Quick Attend
+    </button>
+
+    <h4 class="mt-3">Attendees:</h4>
+    <ul>
+        @foreach (var attendee in EventService.GetAttendance(id))
+        {
+            <li>@attendee</li>
+        }
+    </ul>
+}
+else
+{
+    <p>Event not found.</p>
+}
+
+<h4 class="mt-3">Comments:</h4>
+<ul>
+    @foreach (var entry in EventService.GetComments(id))
+    {
+        <li>
+            <strong>@entry.Email:</strong> @entry.Text
+        </li>
+    }
+</ul>
+
+
+@code {
+    [Parameter] public int id { get; set; }
+    private EventModel? Event;
+
+    protected override void OnInitialized()
+    {
+        // Mock lookup
+        Event = new EventModel
+        {
+            Id = id,
+            Name = "Sample Event",
+            Date = DateTime.Now,
+            Location = "Sample Location"
+        };
+    }
+
+    private void QuickAttend()
+{
+    if (Session.IsLoggedIn)
+    {
+        // ✅ User is logged in → register directly
+        RegisterAttendance();
+    }
+    else
+    {
+        // ❌ No session → redirect to register page
+        NavManager.NavigateTo($"/events/{id}/register");
+    }
+}
+
+private void RegisterAttendance()
+{
+    // For now, use Session.UserName (already set when logged in)
+    EventService.RegisterAttendance(id, Session.UserName!);
+}
+}

@@ -1,0 +1,28 @@
+@page "/sessiontest"
+@using EventEaseApp2.Services
+@inject UserSessionService Session
+
+<h3>Session Test</h3>
+
+@if (Session.IsLoggedIn)
+{
+    <p>Logged in as: @Session.UserName (@Session.Email)</p>
+    <button @onclick="Logout">Logout</button>
+}
+else
+{
+    <p>No active session.</p>
+    <button @onclick="Login">Login as Mike</button>
+}
+
+@code {
+    private void Login()
+    {
+        Session.StartSession("Mike", "mike@email.com");
+    }
+
+    private void Logout()
+    {
+        Session.EndSession();
+    }
+}

@@ -1,0 +1,22 @@
+@page "/events"
+@page "/"
+@using EventEase.Models
+@using EventEaseApp2.Components
+
+<h2>Upcoming Events</h2>
+
+@foreach (EventModel ev in Events)
+{
+    <EventCard @key="ev.Id" Event="ev" />
+<a href="/events/@ev.Id">View Details</a>
+<a href="/events/@ev.Id/register">Register</a>
+}
+
+@code {
+    private List<EventModel> Events = new()
+    {
+        new EventModel { Id = 1, Name = "Corporate Gala", Date = DateTime.Now.AddDays(10), Location = "Jakarta" },
+        new EventModel { Id = 2, Name = "Tech Conference", Date = DateTime.Now.AddDays(20), Location = "Semarang" },
+        new EventModel { Id = 3, Name = "Annual Retreat", Date = DateTime.Now.AddDays(30), Location = "Bali" }
+    };
+}

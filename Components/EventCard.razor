@@ -1,0 +1,71 @@
+@using EventEase.Models
+@using System.ComponentModel.DataAnnotations
+@using EventEaseApp2.Services
+@inject EventService EventService
+
+<div class="event-card">
+    <h3>@Event.Name</h3>
+    <p><strong>Date:</strong> @Event.Date.ToString("MMMM dd, yyyy")</p>
+    <p><strong>Location:</strong> @Event.Location</p>
+
+    <EditForm Model="@UserInput" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        @if (!string.IsNullOrEmpty(ErrorMessage))
+        {
+            <div class="alert alert-danger">@ErrorMessage</div>
+        }
+
+        <div class="form-group">
+            <label for="comment">Your Comments about this Event:</label>
+            <InputText id="comment" class="form-control" @bind-Value="UserInput.Comment" />
+            <ValidationMessage For="@(() => UserInput.Comment)" />
+        </div>
+
+        <div class="form-group">
+            <label for="email">Your Email:</label>
+            <InputText id="email" class="form-control" @bind-Value="UserInput.Email" />
+            <ValidationMessage For="@(() => UserInput.Email)" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Save</button>
+    </EditForm>
+</div>
+
+@code {
+    [Parameter]
+    public EventModel Event { get; set; } = default!;
+
+    private UserCommentModel UserInput = new();
+    private string ErrorMessage = string.Empty;
+
+    private void HandleValidSubmit()
+    {
+        try
+        {
+            ErrorMessage = string.Empty;
+            EventService.AddComment(Event.Id, UserInput.Comment, UserInput.Email);
+
+            Console.WriteLine($"Comment: {UserInput.Comment}, Email: {UserInput.Email}");
+
+            // Clear form
+            UserInput = new UserCommentModel();
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = ex.Message;
+        }
+    }
+
+    public class UserCommentModel
+    {
+        [Required(ErrorMessage = "Comment is required")]
+        [StringLength(200, ErrorMessage = "Comment must be under 200 characters")]
+        public string Comment { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Email is required")]
+        [EmailAddress(ErrorMessage = "Invalid email format")]
+        public string Email { get; set; } = string.Empty;
+    }
+}
